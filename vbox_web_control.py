@@ -109,6 +109,19 @@ def parse_keys_input(input_str):
             codes.extend(text_to_scancodes(token))
     return codes
 
+def run_vboxmanage_command(args):
+    """
+    Helper function to execute VBoxManage commands.
+    Args:
+        args (list): List of arguments for the VBoxManage command.
+    Returns:
+        subprocess.CompletedProcess: The result of the command execution.
+    Raises:
+        subprocess.CalledProcessError: If the command fails.
+    """
+    cmd = ["VBoxManage"] + args
+    return subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
 class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
     def safe_write(self, data):
         """Write data to client (ignoring broken connections)."""
@@ -124,10 +137,8 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
 
         # Endpoint: List available VMs.
         if route == "/list-vms":
-            command = 'VBoxManage list vms'
             try:
-                completed = subprocess.run(command, shell=True, check=True,
-                                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                completed = run_vboxmanage_command(["list", "vms"])
                 output = completed.stdout
                 vm_names = re.findall(r'"([^"]+)"', output)
                 self.send_response(200)
@@ -486,10 +497,9 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
                 return
             try:
                 if action == "start":
-                    cmd = ["VBoxManage", "startvm", vm_name, "--type", "headless"]
+                    run_vboxmanage_command(["startvm", vm_name, "--type", "headless"])
                 else:
-                    cmd = ["VBoxManage", "controlvm", vm_name, action]
-                subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    run_vboxmanage_command(["controlvm", vm_name, action])
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")
                 self.end_headers()
@@ -505,9 +515,8 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
         if route == "/screenshot.png":
             vm_name = params.get("vm", ["myVM"])[0]
             screenshot_path = "screenshot.png"
-            cmd = ["VBoxManage", "controlvm", vm_name, "screenshotpng", screenshot_path]
             try:
-                subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                run_vboxmanage_command(["controlvm", vm_name, "screenshotpng", screenshot_path])
                 self.send_response(200)
                 self.send_header("Content-type", "image/png")
                 # NEW: Check if download parameter is present, and add content-disposition.
@@ -543,16 +552,12 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
                 self.end_headers()
                 self.safe_write(b"Unable to convert input string to scancodes.")
                 return
-            cmd = ["VBoxManage", "controlvm", vm_name, "keyboardputscancode"] + scancodes
             try:
-                completed = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                run_vboxmanage_command(["controlvm", vm_name, "keyboardputscancode"] + scancodes)
                 self.send_response(200)
                 self.send_header("Content-type", "text/plain")
                 self.end_headers()
-                response_message = f"Keystrokes sent to VM '{vm_name}' successfully."
-                if completed.stdout:
-                    response_message += f" Output: {completed.stdout}"
-                self.safe_write(response_message.encode())
+                self.safe_write(f"Keystrokes sent to VM '{vm_name}' successfully.".encode())
             except subprocess.CalledProcessError as e:
                 self.send_response(500)
                 self.send_header("Content-type", "text/plain")
@@ -564,8 +569,7 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
         if route == "/vm-status":
             vm_name = params.get("vm", ["myVM"])[0]
             try:
-                cmd = ["VBoxManage", "showvminfo", vm_name, "--machinereadable"]
-                result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result = run_vboxmanage_command(["showvminfo", vm_name, "--machinereadable"])
                 running = 'VMState="running"' in result.stdout
                 self.send_response(200)
                 self.send_header("Content-type", "application/json")
@@ -582,8 +586,7 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
         if route == "/vm-info":
             vm_name = params.get("vm", ["myVM"])[0]
             try:
-                cmd = ["VBoxManage", "showvminfo", vm_name, "--machinereadable"]
-                result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result = run_vboxmanage_command(["showvminfo", vm_name, "--machinereadable"])
                 info_lines = result.stdout.splitlines()
                 info = {}
                 for line in info_lines:

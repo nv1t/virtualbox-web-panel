@@ -349,19 +349,59 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
       loadVMs();
       setInterval(updateScreenshot, 1000);
       setInterval(loadVMs, 10000);
+      createNotificationArea(); // Initialize the notification area
     };
 
-    // Control VM actions.
+    // Create a notification area for status updates
+    function createNotificationArea() {
+      const notificationArea = document.createElement("div");
+      notificationArea.id = "notificationArea";
+      notificationArea.style.position = "fixed";
+      notificationArea.style.top = "10px";
+      notificationArea.style.left = "10px";
+      notificationArea.style.zIndex = "1000";
+      notificationArea.style.maxWidth = "300px";
+      notificationArea.style.padding = "10px";
+      notificationArea.style.backgroundColor = "#333";
+      notificationArea.style.color = "#fff";
+      notificationArea.style.borderRadius = "5px";
+      notificationArea.style.boxShadow = "0 2px 5px rgba(0, 0, 0, 0.3)";
+      notificationArea.style.display = "none";
+      document.body.appendChild(notificationArea);
+    }
+
+    // Show a notification with a message
+    function showNotification(message) {
+      const notificationArea = document.getElementById("notificationArea");
+      notificationArea.textContent = message;
+      notificationArea.style.display = "block";
+    }
+
+    // Hide the notification
+    function hideNotification() {
+      const notificationArea = document.getElementById("notificationArea");
+      notificationArea.style.display = "none";
+    }
+
+    // Control VM actions with notification updates
     function controlVM(action) {
       var vm = getSelectedVM();
       if (!vm) return;
+      showNotification(`Performing action '${action}' on VM '${vm}'...`);
       fetch(`/control-vm?vm=${encodeURIComponent(vm)}&action=${encodeURIComponent(action)}`)
-      .then(response => response.text())
-      .then(data => {
-        alert(`VM action '${action}' executed. Response: ${data}`);
-        updateVMStatusIcon();
-      })
-      .catch(error => console.error(`Error performing action '${action}' on VM:`, error));
+        .then(response => response.text())
+        .then(data => {
+          hideNotification();
+          showNotification(`Action '${action}' executed successfully.`);
+          setTimeout(hideNotification, 3000); // Auto-hide after 3 seconds
+          updateVMStatusIcon();
+        })
+        .catch(error => {
+          hideNotification();
+          console.error(`Error performing action '${action}' on VM:`, error);
+          showNotification(`Error: Could not perform action '${action}'.`);
+          setTimeout(hideNotification, 5000); // Auto-hide after 5 seconds
+        });
     }
 
     // Load list of VMs.

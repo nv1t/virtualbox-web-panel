@@ -7,6 +7,7 @@ import os
 import json
 import re
 import socket  # Needed for error checking in run_server
+from typing import List, Dict
 
 # Mapping of characters to their corresponding keyboard scancodes.
 KEYCODES = {
@@ -66,10 +67,16 @@ SHIFT_REQUIRED = {
 }
 SHIFT_REQUIRED.update({chr(c): chr(c).lower() for c in range(ord('A'), ord('Z') + 1)})
 
-def text_to_scancodes(text):
+def text_to_scancodes(text: str) -> List[str]:
     """
-    Converts text to a sequence of keyboard scancodes.
-    If a character requires Shift, adds the necessary scancodes.
+    Converts a given text string into a sequence of keyboard scancodes.
+    If a character requires the Shift modifier, the necessary scancodes are added.
+
+    Args:
+        text (str): The input text to convert.
+
+    Returns:
+        List[str]: A list of scancodes representing the input text.
     """
     codes = []
     for ch in text:
@@ -92,9 +99,15 @@ def text_to_scancodes(text):
             continue
     return codes
 
-def parse_keys_input(input_str):
+def parse_keys_input(input_str: str) -> List[str]:
     """
-    Parses tokens (e.g., <enter>, <ctrl>) and converts regular text to scancodes.
+    Parses a string containing tokens (e.g., <enter>, <ctrl>) and converts regular text to scancodes.
+
+    Args:
+        input_str (str): The input string containing tokens and/or text.
+
+    Returns:
+        List[str]: A list of scancodes representing the input string.
     """
     tokens = re.split(r'(<[^>]+>)', input_str)
     codes = []
@@ -109,13 +122,16 @@ def parse_keys_input(input_str):
             codes.extend(text_to_scancodes(token))
     return codes
 
-def run_vboxmanage_command(args):
+def run_vboxmanage_command(args: List[str]) -> subprocess.CompletedProcess:
     """
-    Helper function to execute VBoxManage commands.
+    Executes a VBoxManage command with the given arguments.
+
     Args:
-        args (list): List of arguments for the VBoxManage command.
+        args (List[str]): A list of arguments for the VBoxManage command.
+
     Returns:
         subprocess.CompletedProcess: The result of the command execution.
+
     Raises:
         subprocess.CalledProcessError: If the command fails.
     """
@@ -123,14 +139,26 @@ def run_vboxmanage_command(args):
     return subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
 class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
-    def safe_write(self, data):
-        """Write data to client (ignoring broken connections)."""
+    """
+    HTTP request handler for managing VirtualBox VMs via a web interface.
+    """
+
+    def safe_write(self, data: bytes) -> None:
+        """
+        Safely writes data to the client, ignoring broken connections.
+
+        Args:
+            data (bytes): The data to write to the client.
+        """
         try:
             self.wfile.write(data)
         except (BrokenPipeError, ConnectionResetError):
             print("Client disconnected before response completed.")
 
-    def do_GET(self):
+    def do_GET(self) -> None:
+        """
+        Handles HTTP GET requests and routes them to the appropriate endpoint.
+        """
         parsed_url = urllib.parse.urlparse(self.path)
         route = parsed_url.path
         params = urllib.parse.parse_qs(parsed_url.query)
@@ -613,7 +641,17 @@ class VirtualBoxHandler(http.server.BaseHTTPRequestHandler):
         self.safe_write(b"Route not found.\n")
 
 # Start the server on the specified port.
-def run_server(start_port, max_tries=10):
+def run_server(start_port: int, max_tries: int = 10) -> None:
+    """
+    Starts the HTTP server on the specified port, trying multiple ports if the initial one is unavailable.
+
+    Args:
+        start_port (int): The starting port for the server.
+        max_tries (int): The maximum number of ports to try.
+
+    Raises:
+        OSError: If the server cannot start after trying the specified number of ports.
+    """
     for i in range(max_tries):
         port = start_port + i
         try:
@@ -635,7 +673,7 @@ def run_server(start_port, max_tries=10):
         print(f"Could not start server after trying {max_tries} ports.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="Start the VirtualBox Web Control Panel.")
     parser.add_argument("--port", type=int, default=9091, help="Starting port for the server")
     args = parser.parse_args()
     run_server(args.port)

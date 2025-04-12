@@ -1,6 +1,7 @@
 # VirtualBox Web Control Panel
 
-A lightweight HTTP server script that provides a simple web interface to control and interact with VirtualBox virtual machines.
+A lightweight HTTP server script that offers a simple web interface for controlling and interacting with VirtualBox virtual machines.
+This project uses only Python 3's standard libraries, making it easy to deploy without additional dependencies. Simply place the script on any machine that has `VBoxManage` installed, and you'll be able to manage your VMs through a web browser.
 
 ## Features
 

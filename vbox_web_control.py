@@ -8,6 +8,7 @@ import json
 import re
 import socket  # Needed for error checking in run_server
 from typing import List, Dict
+import signal  # Import signal for handling termination signals
 
 # Mapping of characters to their corresponding keyboard scancodes.
 KEYCODES = {
@@ -712,8 +713,30 @@ def run_server(start_port: int, max_tries: int = 10) -> None:
     else:
         print(f"Could not start server after trying {max_tries} ports.")
 
+def cleanup():
+    """
+    Deletes the screenshot.png file if it exists.
+    """
+    screenshot_path = "screenshot.png"
+    if os.path.exists(screenshot_path):
+        os.remove(screenshot_path)
+        print("Cleanup: Deleted screenshot.png")
+
+def signal_handler(sig, frame):
+    """
+    Handles termination signals and performs cleanup.
+    """
+    print("Signal received, performing cleanup...")
+    cleanup()
+    exit(0)
+
+# Register signal handlers for cleanup
+signal.signal(signal.SIGINT, signal_handler)  # Handle Ctrl+C
+signal.signal(signal.SIGTERM, signal_handler)  # Handle termination signals
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Start the VirtualBox Web Control Panel.")
     parser.add_argument("--port", type=int, default=9091, help="Starting port for the server")
     args = parser.parse_args()
     run_server(args.port)
+    cleanup()  # Ensure cleanup is called after the server stops

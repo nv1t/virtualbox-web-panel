@@ -26,7 +26,7 @@ A lightweight HTTP server script that provides a simple web interface to control
 
 Below is a demonstration of the web interface in action:
 
-![VirtualBox Web Control Panel Demo](assets/demo.gif)
+![VirtualBox Web Control Panel Demo](assets/screenrecord.gif)
 
 ---
 

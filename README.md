@@ -6,6 +6,9 @@ A lightweight HTTP server script that provides a simple web interface to control
 - Start, stop, and save state of VMs
 - Send keystrokes to a VM
 - View periodic screenshots of the VM's display
+- Download VM screenshots
+- View VM status indicators
+- Display detailed VM configuration in a collapsible sidebar
 
 ## Features
 
@@ -13,9 +16,11 @@ A lightweight HTTP server script that provides a simple web interface to control
 - **Control Actions:** Start, shut down, or save the state of a VM using corresponding endpoints.
 - **Keystroke Injection:** Convert plain text (with support for special tokens like `<enter>` or `<ctrl>`) into scancodes and send them to a selected VM.
 - **Screenshot Capture:** Retrieve a live screenshot from the VM.
-- **VM Details:** Display detailed VM configuration information in a sidebar within the web interface.
+- **Download Screenshots:** Save the current VM screenshot as a file.
+- **VM Status Indicator:** Displays whether the selected VM is running or stopped.
+- **VM Details Sidebar:** Display detailed VM configuration information in a collapsible sidebar within the web interface.
 - **Responsive Web Interface:** The front-end dashboard updates periodically and provides feedback for actions executed on the VM.
-
+- **Notification System:** Displays real-time notifications for VM actions and errors.
 
 ---
 
@@ -24,6 +29,7 @@ A lightweight HTTP server script that provides a simple web interface to control
 - **VirtualBox:** Ensure VirtualBox is installed and the `VBoxManage` command is available on your system's PATH.
 - **Python 3:** The script requires Python 3.x. It uses standard libraries such as `argparse`, `http.server`, `subprocess`, and `json`.
 
+---
 
 ## Installation
 
@@ -66,6 +72,10 @@ http://localhost:9091
 - **Buttons to start/save state/shutdown a VM**
 - **Textbox to send keystrokes**
 - **Live screenshot preview**
+- **Download screenshot button**
+- **VM status indicator (🟢 for running, 🔴 for stopped)**
+- **Collapsible sidebar for detailed VM information**
+- **Real-time notifications for actions and errors**
 
 You can enter plain text or special keys in angled brackets. For example:
 ```
@@ -105,9 +115,10 @@ You can enter plain text or special keys in angled brackets. For example:
 | `keys`    | string | Keystrokes, can include special tokens like `<ctrl>`, `<enter>` |
 
 #### `/screenshot.png`
-| Parameter | Type   | Description    |
-|-----------|--------|----------------|
-| `vm`      | string | Name of the VM |
+| Parameter | Type   | Description                                   |
+|-----------|--------|-----------------------------------------------|
+| `vm`      | string | Name of the VM                                |
+| `download`| string | Optional. Set to `1` to download the screenshot|
 
 #### `/vm-status`
 | Parameter | Type   | Description    |
@@ -119,12 +130,14 @@ You can enter plain text or special keys in angled brackets. For example:
 |-----------|--------|----------------|
 | `vm`      | string | Name of the VM |
 
+---
+
 ## Notes
 
 - Combo key combinations (e.g., `<ctrl>+<alt>+del`) are not supported. Only sequential key presses are allowed.
-
 - Ensure the VirtualBox VM is in a state that allows screenshot and keyboard input (e.g., running in headless mode).
 - If screenshot generation fails, a fallback SVG will be shown.
+- Notifications provide real-time feedback for VM actions and errors.
 
 ---
 

@@ -1,14 +1,6 @@
 # VirtualBox Web Control Panel
 
-A lightweight HTTP server script that provides a simple web interface to control and interact with VirtualBox virtual machines. This project allows you to:
-
-- List available VMs
-- Start, stop, and save state of VMs
-- Send keystrokes to a VM
-- View periodic screenshots of the VM's display
-- Download VM screenshots
-- View VM status indicators
-- Display detailed VM configuration in a collapsible sidebar
+A lightweight HTTP server script that provides a simple web interface to control and interact with VirtualBox virtual machines.
 
 ## Features
 
@@ -85,8 +77,10 @@ http://localhost:9091
 
 You can enter plain text or special keys in angled brackets. For example:
 ```
-<ctrl>a<enter>
+<win>cmd<enter>
 ```
+
+Keep in mind, that the operating system needs time to process some inputs. 
 
 ### Supported Special Keys
 ```
@@ -138,15 +132,6 @@ You can enter plain text or special keys in angled brackets. For example:
 
 ---
 
-## Notes
-
-- Combo key combinations (e.g., `<ctrl>+<alt>+del`) are not supported. Only sequential key presses are allowed.
-- Ensure the VirtualBox VM is in a state that allows screenshot and keyboard input (e.g., running in headless mode).
-- If screenshot generation fails, a fallback SVG will be shown.
-- Notifications provide real-time feedback for VM actions and errors.
-
----
-
 ## Contributing
 
 Contributions and feedback are welcome! Feel free to fork the repository and submit pull requests to improve functionality, add features, or correct issues.
@@ -159,4 +144,5 @@ Contributions and feedback are welcome! Feel free to fork the repository and sub
 - Authentication layer for control access
 - Configurable polling intervals for screenshots
 - Command history/autocomplete in input box
+- Delay Parameter and/or Ducky Script Inputs
 

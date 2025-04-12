@@ -22,6 +22,12 @@ A lightweight HTTP server script that provides a simple web interface to control
 - **Responsive Web Interface:** The front-end dashboard updates periodically and provides feedback for actions executed on the VM.
 - **Notification System:** Displays real-time notifications for VM actions and errors.
 
+## Demonstration
+
+Below is a demonstration of the web interface in action:
+
+![VirtualBox Web Control Panel Demo](assets/demo.gif)
+
 ---
 
 ## Prerequisites

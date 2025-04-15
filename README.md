@@ -142,6 +142,7 @@ Contributions and feedback are welcome! Feel free to fork the repository and sub
 ## Future Improvements
 
 - Support for combo key combinations (e.g., `<ctrl>+<alt>+del`)
+- Separate Frontend/Backend Code and use a make style script to generate a "release" -> easier to maintain.
 - Authentication layer for control access
 - Configurable polling intervals for screenshots
 - Command history/autocomplete in input box
